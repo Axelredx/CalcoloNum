@@ -131,12 +131,16 @@ phi = (1.0 + 5 ** 0.5) / 2.0  #golden ratio = 1.6180339887...
 print(abs(rk - phi) / phi)    
 """ 
 Result:
-per numeri grandi, tipo mille, l'ultimo print da 0.0, ciò significa che va a convergere
+per numeri grandi, tipo mille, l'ultimo print da 0.0, ciò significa che va a 
+convergere diminuendo l'errore relativo
 """
 #D)
-arange = np.arange(n)                                        # lista di n valori, da 0 a n
-plt.plot(arange, [rk for i in arange])                       # grafico con i valori arange nelle ascisse 
-                                                             # e l'errore relativo al valore i-esimo di arange 
-                                                             # calcolato con la funzione r(k)
+arange = np.arange(n)                       # lista di n valori, da 0 a n
+plt.plot(arange, [rk for i in arange])      # grafico con i valori arange nelle ascisse 
+                                            # e l'errore relativo al valore i-esimo di arange rk
 plt.legend(['relative error'])
 plt.show()
+""" 
+l'asse y l'errore relativo di rk e, al crescere di quest'ultimo, rk viene approssimato con 
+piu' precisione, e il relativo errore decresce, come si può vedere dal grafico
+"""

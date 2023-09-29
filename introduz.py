@@ -59,7 +59,7 @@ import matplotlib.pyplot as plt
 # plt.legend([''black','red']) colori 2 grafi
 #
 # fig, ax = plt.subplots(nrows=2, ncols=2) er disegnare più plot nella stessa schermata si usa la funzione
-#plt.subplots(nrows=rnum, ncols=cnum), dove rnum rappresenta
+# plt.subplots(nrows=rnum, ncols=cnum), dove rnum rappresenta
 #il numero di plot che si vuole visualizzare in riga, mentre cnum
 #rappresenta il numero di plot che si vuole visualizzare in colonna
 # ax[0,0].plot(x, y, ’ko’)
