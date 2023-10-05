@@ -92,3 +92,26 @@ import matplotlib.pyplot as plt
 #Il boxplot(), risulta utile per visualizzare il range dei dati.
 #> x = np.array((3, 3, 3, 2, 1, 4, 6, 2, 4, 1, 6, 4, 2, 1, 5, 4
 #> plt.boxplot(x)
+
+##ESAMPI
+
+x = np.arange(11) #vett di grandezza 5 di int 0-4
+y = np.arange(-5,6) #x DEVE essere stessa dim x stare sullo steso grafo
+z = y**2
+plt.plot(x, '--', color='green') #vet tipo linea, colore
+plt.plot(x,z,'-o',color='black')
+plt.show()
+
+fig, ax=plt.subplots(nrows = 2, ncols = 2)
+ax[0,0].plot(x,z)
+ax[0,1].plot(y)
+plt.show()
+
+x1 = np.linspace(-1,10,100) #linspace(0,1,50) vett 0,1 con 50 num 
+g = np.exp(x1)
+fig, bu=plt.subplots(nrows = 2, ncols = 2)
+bu[0,0].plot(x1, g)
+bu[0,1].semilogy(x1,g)
+bu[1,0].semilogx(x1,g)
+bu[1,1].loglog(x1,g)
+plt.show()
