@@ -14,7 +14,7 @@ differences. Check the result of np.finfo(float).eps.
 #A)
 
 import sys
-help(sys.float_info)
+#help(sys.float_info)
 print(sys.float_info)
 
 """ 

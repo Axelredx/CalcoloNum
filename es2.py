@@ -73,8 +73,10 @@ deltab = np.linalg.norm(b-btilde, ord=2)
 print ('delta x = ', deltax)
 print ('delta b = ', deltab)
 
-#####
-#####
+##################################################
+##################################################
+##################################################
+##################################################
 
 """Metodi diretti
 Exercise 2.1. Si consideri la matrice
@@ -136,34 +138,54 @@ for i in range(n):
 err=np.linalg.norm(my_x-x,2)/np.linalg.norm(x)
 print('%e',err)
 
-# IMPLEMENTAZIONE ALTERNATIVA - 1
-#help(LUdec.lu)
-#help(scipy.linalg.solve_triangular)
-P, L, U = LUdec.lu(A) # A = P*L*U (non P*A = L*U)
-print ('A = ', A)
-print ('P = ', P)
-print ('L = ', L)
-print ('U = ', U)
-print ('P*L*U = ', np.matmul(P , np.matmul(L, U)))
-print ('diff = ', np.linalg.norm(A - np.matmul(P , np.matmul(L, U)), 'fro' ) )
-
-# if P != np.eye(n):
-# Ax = b <---> PLUx = b <---> LUx = inv(P)b <---> Ly=inv(P)b & Ux=y : matrici triangolari
-# quindi
-invP = np.linalg.inv(P)
-y = scipy.linalg.solve_triangular( L , np.matmul(invP,b), lower=True, unit_diagonal=True
-)
-my_x = scipy.linalg.solve_triangular(U, y, lower=False)
-# if P == np.eye(n):
-# Ax = b <---> PLUx = b <---> PLy=b & Ux=y
-# y = scipy.linalg.solve_triangular(np.matmul(P,L) , b, lower=True, unit_diagonal=True)
-# my_x = scipy.linalg.solve_triangular(U, y, lower=False)
-print('\nSoluzione calcolata: ')
-for i in range(n):
-    print('%0.2f' %my_x[i])
+##################################################
+##################################################
     
 """Exercise 2.2. 
 Si ripeta l’esercizio precedente sulla matrice di Hilbert, che si pu`o generare con la funzione
 A = scipy.linalg.hilbert(n) per n = 5, . . . , 10. In particolare:
 • Calcolare il numero di condizionamento di A e rappresentarlo in un grafico al variare di n
     """
+import matplotlib.pyplot as plt
+
+# crazione dati e problema test
+K_A=np.zeros((6,1))
+for n in np.arange(5,11):
+    A=scipy.linalg.hilbert(n)
+    x=np.ones((A.shape[1],1))
+    b=np.matmul(A,x)
+    K_A[n-5]=np.linalg.cond(A)
+    
+    print('x: \n', x , '\n')
+    print('x.shape: ', x.shape, '\n' )
+    print('b: \n', b , '\n')
+    print('b.shape: ', b.shape, '\n' )
+    print('A: \n', A, '\n')
+    print('A.shape: ', A.shape, '\n' )
+    print('K(A)=', K_A[n-5], '\n')
+
+
+x = np.arange(5,1)
+plt.plot(x,K_A,color='blue', linestyle='--')
+plt.title('CONDIZIONAMENTO DI A ')
+plt.xlabel('dimensione matrice: n')
+plt.ylabel('K_A')
+plt.show()
+
+"""• Considerare il vettore colonna x = (1, . . . , 1)T , calcola il corrispondente termine noto 
+b per il sistema lineare Ax = b e la relativa soluzione x̃ usando la fattorizzazione di Cholesky 
+come nel caso precedente."""
+Err=np.zeros((6,1))
+
+for i in arange(5,11):
+    # decomposizione di Choleski
+    L = scipy.linalg.cholesky (i)
+    print('L:', L, '\n')
+    print('L.T*L =', np.matmul(L, np.transpose(L)), '\n')
+    Err[i-5] = scipy.linalg.norm(A-np.matmul(L, np.transpose(L)), 'fro')
+    print('err = ', Err[i-5], '\n')    
+    y = ...
+    my_x = ...
+    print('my_x = \n ', my_x)
+
+    print('norm =', scipy.linalg.norm(x-my_x, 'fro'))
