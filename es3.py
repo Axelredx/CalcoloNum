@@ -17,7 +17,7 @@ magine A (diversa dal cameraman) in scala di grigio di dimensione m × n.
     ∥A − Ap ∥2 /∥A∥2
 4. Calcolare il fattore di compressione
     cp = 1 /p * min(m, n) − 1.
-    
+5. Calcolare e plottare l’errore relativo e il fattore di compressione al variare di p. 
 """
 import numpy as np
 import scipy as sc
@@ -28,7 +28,7 @@ from skimage.io import imread
 #A = data.astronaut()
 #print(type(A))
 #print(A.shape)
-#A = A[:,:,2]
+#A = A[:,:,2] canale num 2
 #plt.imshow(A, cmap='gray')
 #plt.imshow(A)
 #plt.show()
@@ -97,7 +97,7 @@ plt.title('Fattore di compressione')
 
 plt.show()
 
-"""5. Calcolare e plottare l’errore relativo e il fattore di compressione al variare di p.
-Exercise 1.2. Eseguire l’esercizio precedente caricando un’immagine da un file usando 
+"""Exercise 1.2. Eseguire l’esercizio precedente caricando un’immagine da un file usando 
 la function skimage.io.imread.
 """
+#procedimento analogo ad esempio con A = data.astronaut()
