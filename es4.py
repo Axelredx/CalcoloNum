@@ -93,13 +93,13 @@ Exercise 2.1. Date le seguenti funzioni:
 1+25∗x2 x ∈ [−1, 1]
 • f(x) = sin(x) + cos(x) x ∈ [0, 2π]
 Si eseguano le seguenti richieste per ciascuna delle funzioni date:
-1. Calcolare m = 10 coppie di punti (xi
-, f(xi))
+1. Calcolare m = 10 coppie di punti (xi, f(xi))
 2. Per n fissato calcolare una soluzione del problema di minimi quadrati, descritto sopra, utilizzando un
 metodo a scelta tra quelli utilizzati nell’esercizio precedente.
 3. Per ciascun valore di n ∈ {1, 2, 3, 5, 7}, creare una figura con il grafico della funzione esatta f(x) insieme
 a quello del polinomio di approssimazione p(x), evidenziando gli m punti noti.
-4. Per ciascun va
+4. Per ciascun valore di n ∈ {1, 2, 3, 5, 7}, calcolare e stampare il valore del residuo in norma 2 commesso
+nei punti xi.
 """
 case = 2
 m = 10
@@ -154,5 +154,5 @@ plt.grid()
 plt.show()
 
 
-res = np.linalg.norm(y- A@alpha_svd)
+res = np.linalg.norm(y - A@alpha_svd)
 print('Residual: ', res)
