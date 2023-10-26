@@ -137,6 +137,7 @@ for i in range(n+1):
 
 print(alpha_svd)
 
+"""3"""
 x_plot = np.linspace(x[0], x[-1], m_plot)
 A_plot = np.zeros((m_plot, n+1))
 
@@ -154,5 +155,6 @@ plt.grid()
 plt.show()
 
 
+"""4"""
 res = np.linalg.norm(y - A@alpha_svd)
 print('Residual: ', res)
