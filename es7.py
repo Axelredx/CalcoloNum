@@ -194,8 +194,9 @@ plt.xticks([]), plt.yticks([])
 
 for i, L in enumerate(lambdas):
   plt.subplot(1, len(lambdas) + 2, i + 3).imshow(images[i], cmap='gray', vmin=0, vmax=1)
-  plt.title(f"Ricostruzione ($\lambda$ = {L:.2f})")
+  plt.title(f"Ric. ($\lambda$ = {L:.2f})")
 plt.show()
+
 """Exercise 1.4. Testare i punti precedenti su due immagini in scala di grigio con caratteristiche differenti (per
 esempio, un’immagine tipo fotografico e una ottenuta con uno strumento differente, microscopio o altro).
 Degradare le nuove immagini applicando, mediante le funzioni gaussian kernel(), psf fft(), l’operatore
@@ -204,3 +205,14 @@ di blur con parametri:
     σ = 1,3 dimensione del kernel 5 ×5
     Aggiungendo rumore gaussiano con deviazione standard nell’ intervallo (0,0,05].
 """
+#analogo a prima cambia solo i seguenti parametri...
+
+sigma1 = 0.5
+k1 = gaussian_kernel(7,3)
+
+k2 = gaussian_kernel(9,3)
+
+sigma2 = 1.3
+k = gaussian_kernel(5,3)
+
+noise = np.random.normal(0,0,5) * sigma
