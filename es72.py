@@ -1,47 +1,22 @@
-"""1 Image deblur
-Il problema di deblur consiste nella ricostruzione di un immagine a partire da un dato acquisito mediante il
-seguente modello:
-    y = Ax + η (1)
-    dove :
-    y rappresenta l’immagine corrotta,
-    x rappresenta l’immagine originale che vogliamo ricostruire
-    A rappresenta l’operatore che applica il blur Gaussiano
-    η ∼ N(0,σ2) rappresenta una realizzazione di rumore additivo con distribuzione Gaussiana di media
-    μ = 0 e deviazione standard σ
-Exercise 1.1. Problema test
-        Caricare l’immagine camera dal modulo skimage.data rinormalizzandola nel range [0,1].
-        Applicare un blur di tipo gaussiano con deviazione standard 3 il cui kernel ha dimensioni 24 ×24.
-    utilizzando la funzione. Utilizzare prima cv2 (open-cv) e poi la trasformata di Fourier.
-        Aggiungere rumore di tipo gaussiano, con σ = 0.02, usando la funzione np.random.normal().
-        Calcolare le metriche Peak Signal Noise Ratio (PSNR) e Mean Squared Error (MSE) tra l’immagine
-    degradata e l’immagine esatta usando le funzioni peak signal noise ratio e mean squared error
-    disponibili nel modulo skimage.metrics.
-"""
+"""Exercise 1.4. Ripetere i punti precedenti utilizzando anche l’operatore downsampling con i seguenti
+fattori di scaling sf = 2,4,8,16."""
+
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import data, metrics
 from scipy import signal
 from numpy import fft
-from utils import psf_fft, A, AT, gaussian_kernel 
-
+#from utils import psf_fft, A, AT, gaussian_kernel   # commentato per pt.2
+from utils_SR import psf_fft, A, AT, gaussian_kernel
 # Immagine in floating point con valori tra 0 e 1
 X = data.camera().astype(np.float64)/255 #conversione in float + divisione x ottenere val tra 0 e 1 dei vari pixel (normalizzazione dati)
 m, n = X.shape
+sf = 4
 
 # Genera il filtro di blur
 k = gaussian_kernel(24,3)
 plt.imshow(k)
-plt.show()
-
-# Blur with openCV
-X_blurred = cv.filter2D(X,-1,k)
-plt.subplot(121).imshow(X, cmap='gray', vmin=0, vmax=1)
-plt.title('Original')
-plt.xticks([]), plt.yticks([])
-plt.subplot(122).imshow(X_blurred, cmap='gray', vmin=0, vmax=1)
-plt.title('Blurred')
-plt.xticks([]), plt.yticks([])
 plt.show()
 
 # Blur with FFT
@@ -49,55 +24,57 @@ K = psf_fft(k,24,X.shape)
 plt.imshow(np.abs(K))
 plt.show()
 
-X_blurred = A(X,K)
+
+X_blurred = A(X,K,sf) #sf è fattore di scailing
 
 # Genera il rumore
 sigma = 0.02
 np.random.seed(42)
-noise = np.random.normal(size=X.shape) * sigma
+noise = np.random.normal(size=X_blurred.shape) * sigma
 
 # Aggiungi blur e rumore
 y = X_blurred + noise
-PSNR = metrics.peak_signal_noise_ratio(X,y) #maggiore è e più vicine sono le immagini
-mse = metrics.mean_squared_error(X,y) #minore è e più vicine sono le immagini == PSNR
-ATy = AT(y, K)
+ATy = AT(y, K, sf)
+PSNR = metrics.peak_signal_noise_ratio(X,ATy) #uso ATy x avere stesse dimensioni di immagini di partenza
+mse = metrics.mean_squared_error(X,ATy) 
 
+
+plt.subplot(121).imshow(X, cmap='gray', vmin=0, vmax=1)
+plt.title('Original')
+#plt.xticks([]), plt.yticks([])
+plt.subplot(122).imshow(X_blurred, cmap='gray', vmin=0, vmax=1)
+plt.title('Downsampled')
+#plt.xticks([]), plt.yticks([])
+plt.show()
 
 # Visualizziamo i risultati
 plt.figure(figsize=(30, 10))
 plt.subplot(121).imshow(X, cmap='gray', vmin=0, vmax=1)
 plt.title('Original')
-plt.xticks([]), plt.yticks([])
+#plt.xticks([]), plt.yticks([])
 plt.subplot(122).imshow(y, cmap='gray', vmin=0, vmax=1)
 plt.title(f'Corrupted (PSNR: {PSNR:.2f})')
-plt.xticks([]), plt.yticks([])
+#plt.xticks([]), plt.yticks([])
 plt.show()
 
-"""Exercise 1.2. Soluzione naive Una possibile ricostruzione dell’immagine originale x partendo dall’imma-
-gine corrotta y `e la soluzione naive data dal minimo del seguente problema di ottimizzazione:
-        x∗= argminx 1/2 ∥Ax −y∥22(2)
-    Utilizzando il metodo del gradiente coniugato implementato dalla funzione minimize della libreria
-    scipy, calcolare la soluzione naive.
-    Analizza l’andamento del PSNR e dell’MSE al variare del numero di iterazion
-"""
-# Soluzione naive
+#########################Soluzione naive
 from scipy.optimize import minimize
 
 # Funzione da minimizzare
 def f(x):
     x = x.reshape((m, n))
-    Ax = A(x, K)
+    Ax = A(x, K,sf)
     return 0.5 * np.sum(np.square(Ax - y))
 
 # Gradiente della funzione da minimizzare
 def df(x):
     x = x.reshape((m, n))
-    ATAx = AT(A(x,K),K)
+    ATAx = AT(A(x,K,sf),K, sf)
     d = ATAx - ATy
     return d.reshape(m * n)
 
 # Minimizzazione della funzione
-x0 = y.reshape(m*n)
+x0 = ATy.reshape(m*n)
 max_iter = 25
 res = minimize(f, x0, method='CG', jac=df, options={'maxiter':max_iter, 'return_all':True})
 
@@ -110,7 +87,7 @@ for k, x_k in enumerate(res.allvecs):
 X_res = res.x.reshape((m, n))
 
 # PSNR dell'immagine corrotta rispetto all'oginale
-starting_PSNR = np.full(PSNR.shape[0], metrics.peak_signal_noise_ratio(X, y))
+starting_PSNR = np.full(PSNR.shape[0], metrics.peak_signal_noise_ratio(X, ATy))
 
 # Visualizziamo i risultati
 ax2 = plt.subplot(1, 2, 1)
@@ -125,35 +102,23 @@ plt.title('Immagine Ricostruita')
 plt.xticks([]), plt.yticks([])
 plt.show()
 
-"""Exercise 1.3. Soluzione regolarizzata Si consideri il seguente problema regolarizzato secondo Tikhonov
-        x∗= argminx 1/2 ∥Ax −y∥22+ λ∥x∥22(3)
-    Utilizzando sia il metodo del gradiente che il metodo del gradiente coniugato calcolare la soluzione del
-        problema regolarizzato.
-    Analizzare l’andamento del PSNR e dell’MSE al variare del numero di iterazioni.
-    Facendo variare il parametro di regolarizzazione λ, analizzare come questo influenza le prestazioni del
-        metodo analizzando le immagini. 
-    Scegliere λ con il metodo di discrepanza.
-    Scegliere λ attraverso test sperimentali come il valore che minimizza il valore del PSNR. Confrontare
-    il valore ottenuto con quella della massima discrepanza.
-"""
-
 # Regolarizzazione
 # Funzione da minimizzare
 def f(x, L):
     nsq = np.sum(np.square(x))
     x  = x.reshape((m, n))
-    Ax = A(x, K)
+    Ax = A(x, K, sf)
     return 0.5 * np.sum(np.square(Ax - y)) + 0.5 * L * nsq
 
 # Gradiente della funzione da minimizzare
 def df(x, L):
     Lx = L * x
     x = x.reshape(m, n)
-    ATAx = AT(A(x,K),K)
+    ATAx = AT(A(x,K, sf),K, sf)
     d = ATAx - ATy
     return d.reshape(m * n) + Lx
 
-x0 = y.reshape(m*n)
+x0 = ATy.reshape(m*n)
 lambdas = [0.01,0.03,0.04, 0.06]
 PSNRs = []
 images = []
@@ -197,34 +162,69 @@ for i, L in enumerate(lambdas):
   plt.title(f"Ric. ($\lambda$ = {L:.2f})")
 plt.show()
 
-"""Exercise 1.4. Testare i punti precedenti su due immagini in scala di grigio con caratteristiche differenti (per
-esempio, un’immagine tipo fotografico e una ottenuta con uno strumento differente, microscopio o altro).
-Degradare le nuove immagini applicando, mediante le funzioni gaussian kernel(), psf fft(), l’operatore
-di blur con parametri:
-    σ = 0,5 dimensione del kernel 7 ×7 e 9 ×9
-    σ = 1,3 dimensione del kernel 5 ×5
-    Aggiungendo rumore gaussiano con deviazione standard nell’ intervallo (0,0,05].
-"""
-#analogo a prima cambia solo i seguenti parametri...
+"""Exercise 1.5 (Facoltativo TV). Un’altra funzione adatta come termine di regolarizzazione `e la Variazione
+Totale. Data x immagine di dimensioni m ×n la variazione totale TV di x `e definita come:
+TV (x) =
+n∑
+i
+m∑
+j
+√
+||∇x(i,j)||22 + ε2 (4)
+Come nei casi precedenti il problema di minimo che si va a risolvere `e il seguente:
+x∗ = arg minx
+1
+2 ||Ax −b||22 + λTV (x) (5)
+il cui gradiente ∇f `e dato da
+∇f(x) = (ATAx −ATb) + λ∇TV (x) (6)
+Utilizzando il metodo del gradiente e la funzione minimize, calcolare la soluzione del precendente
+problema di minimo regolarizzato con la funzione TV per differenti valori di λ, utilizzando le funzioni
+totvar e grad totvar.
+Per calcolare il gradiente dell’immagine ∇u usiamo la funzione ‘np.gradient‘ che approssima la derivata
+per ogni pixel calcolando la differenza tra pixel adiacenti. I risultati sono due immagini della stessa
+dimensione dell’immagine in input, una che rappresenta il valore della derivata orizzontale e l’altra della
+derivata verticale . Il gradiente dell’immagine nel punto (i,j) `e quindi un vettore di due componenti,
+uno orizzontale contenuto e uno verticale.
+Per risolvere il problema di minimo `e necessario anche calcolare il gradiente della variazione totale che
+`e definito nel modo seguente
+∇TV (u) = −div
+(
+∇u√||∇u||22 + ε2
+)
+(7)
+dove la divergenza `e definita come
+div(F) = ∂Fx
+∂x + ∂Fy
+∂y (8)
+div(F) `e la divergenza del campo vettoriale F, nel nostro caso F ha due componenti dati dal gradiente
+dell’immagine ∇u scalato per il valore 1√||∇u||22+ε2. Per calcolare la divergenza bisogna calcolare la
+derivata orizzontale ∂Fx
+∂x della componente x di F e sommarla alla derivata verticale ∂Fy
+∂y della com-
+ponente y di F. Per specificare in quale direzione calcolare la derivata con la funzione ‘np.gradient‘
+utilizziamo il parametro ‘axis = 0‘ per l’orizzontale e ‘axis = 1‘ per la verticale """
 
-#sigma1 = 0.5
-#k1 = gaussian_kernel(7,3)
+#####################opzionale!!!!!! (NON finito)
 
-#k2 = gaussian_kernel(9,3)
+# Regolarizzazione
+# Funzione da minimizzare
+def f(x, L):
+    #nsq = np.sum(np.square(x))
+    x  = x.reshape((m, n))
+    nsq = totvar(x) #variazione totale
+    Ax = A(x, K, sf)
+    return 0.5 * np.sum(np.square(Ax - y)) + 0.5 * L * nsq
 
-#sigma2 = 1.3
-#k = gaussian_kernel(5,3)
+# Gradiente della funzione da minimizzare
+def df(x, L):
+    Lx = L * x
+    x = x.reshape(m, n)
+    ATAx = AT(A(x,K, sf),K, sf)
+    d = ATAx - ATy
+    return d.reshape(m * n) + Lx
 
-#noise = np.random.normal(0,0,5) * sigma
-
-#############################################################################################à
-"""pt. 2 (30/11/2023)
-    """
-    
-#modifico lambda x massimizare funzione: ad esempio vado ad analizzare quale PSNR 
-# di lambda è il più grande
-x0 = y.reshape(m*n)
-lambdas = [0.02,0.021,0.022,0.023,0.024,0.025,0.026,0.027,0.028,0.029,0.03] 
+x0 = ATy.reshape(m*n)
+lambdas = [0.01,0.03,0.04, 0.06]
 PSNRs = []
 images = []
 
@@ -243,6 +243,8 @@ for i, L in enumerate(lambdas):
     PSNRs.append(PSNR)
     print(f'PSNR: {PSNR:.2f} (\u03BB = {L:.2f})')
     
+    
+
 # Visualizziamo i risultati
 plt.plot(lambdas,PSNRs)
 plt.title('PSNR per $\lambda$')
@@ -263,7 +265,4 @@ plt.xticks([]), plt.yticks([])
 for i, L in enumerate(lambdas):
   plt.subplot(1, len(lambdas) + 2, i + 3).imshow(images[i], cmap='gray', vmin=0, vmax=1)
   plt.title(f"Ric. ($\lambda$ = {L:.2f})")
-plt.show()    
-
-###############################################################################
-#from utils_SR import psf_fft, A, AT, gaussian_kernel  # su file es72.py
+plt.show()
