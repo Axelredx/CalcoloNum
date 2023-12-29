@@ -203,7 +203,7 @@ Degradare le nuove immagini applicando, mediante le funzioni gaussian kernel(), 
 di blur con parametri:
     σ = 0,5 dimensione del kernel 7 ×7 e 9 ×9
     σ = 1,3 dimensione del kernel 5 ×5
-    Aggiungendo rumore gaussiano con deviazione standard nell’ intervallo (0,0,05].
+    Aggiungendo rumore gaussiano con deviazione standard nell’ intervallo (0,0.05].
 """
 #analogo a prima cambia solo i seguenti parametri...
 
